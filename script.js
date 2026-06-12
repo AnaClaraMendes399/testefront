@@ -13,7 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const encerrarBtn = document.getElementById('encerrarBtn');
     const limparBtn = document.getElementById('limparBtn');
 
-    let userSessionId = null;
+    // Mantém a mesma sessão de chat ativa na aba do navegador (sobrevive a reconexões e F5)
+    let userSessionId = sessionStorage.getItem('stylebot_session_id');
+    if (!userSessionId) {
+        userSessionId = 'sess_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        sessionStorage.setItem('stylebot_session_id', userSessionId);
+    }
 
     function addMessageToChat(sender, text, type = 'normal') {
         const messageElement = document.createElement('div');
@@ -79,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Configuração OTIMIZADA para o Render
         socket = io(URL_BACKEND, {
-            transports: ['polling'],  // Apenas polling, sem WebSocket
+            transports: ['polling'],  // Apenas polling, sem WebSocket direto (melhor para o Render free)
             reconnection: true,
             reconnectionAttempts: 10,
             reconnectionDelay: 2000,
             timeout: 60000,
-            upgrade: false  // Não tenta fazer upgrade para WebSocket
+            upgrade: false  // Evita oscilação de reconexão do WebSocket
         });
 
         socket.on('connect', () => {
@@ -121,10 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         socket.on('status_conexao', (data) => {
             console.log('Status do servidor:', data);
-            if (data.session_id) {
+            // Salva o ID do servidor caso ainda não tenhamos um no sessionStorage
+            if (data.session_id && !sessionStorage.getItem('stylebot_session_id')) {
                 userSessionId = data.session_id;
-                addMessageToChat('Status', `Sessão ID: ${data.session_id.substring(0, 8)}...`, 'status');
+                sessionStorage.setItem('stylebot_session_id', userSessionId);
             }
+            addMessageToChat('Status', `Sessão ID: ${userSessionId.substring(0, 8)}...`, 'status');
             if (data.data) {
                 addMessageToChat('Status', data.data, 'status');
             }
@@ -162,7 +169,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (socket && socket.connected) {
             addMessageToChat('user', messageText);
-            socket.emit('enviar_mensagem', { mensagem: messageText });
+            // Envia a mensagem com o ID da sessão para o bot lembrar da conversa
+            socket.emit('enviar_mensagem', { 
+                mensagem: messageText, 
+                session_id: userSessionId 
+            });
             messageInput.value = '';
             messageInput.focus();
         } else {
