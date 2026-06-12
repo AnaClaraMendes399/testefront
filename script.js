@@ -79,14 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Configuração OTIMIZADA para o Render
         socket = io(URL_BACKEND, {
-            transports: ['polling', 'websocket'],  // Polling primeiro, depois WebSocket
+            transports: ['polling'],  // Apenas polling, sem WebSocket
             reconnection: true,
-            reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+            reconnectionAttempts: 10,
             reconnectionDelay: 2000,
-            reconnectionDelayMax: 10000,
-            timeout: 60000,  // 60 segundos de timeout (importante para o plano free)
-            autoConnect: true,
-            forceNew: true
+            timeout: 60000,
+            upgrade: false  // Não tenta fazer upgrade para WebSocket
         });
 
         socket.on('connect', () => {
