@@ -4,40 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StyleBot - Seu Assistente de Moda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="chat-container">
-        <figure class="logo-container">
-            <div class="stylebot-logo">
-                <span class="sb">SB</span>
-                <span class="sparkle">✦</span>
+    <div class="app-container">
+        <!-- Painel Lateral (Controle e Identidade) -->
+        <aside class="sidebar-panel">
+            <div class="brand-section">
+                
+                <h2 class="brand-title">StyleBot</h2>
+                <p class="brand-tagline">Curadoria Digital de Moda</p>
             </div>
-        </figure>
-        <div id="controles">
-            <button id="iniciarBtn" class="btn-iniciar">💬 Iniciar conversa</button>
-            <button id="limparBtn" class="btn-limpar">🧹 Limpar tela</button>
-            <button id="encerrarBtn" class="btn-encerrar">🚪 Encerrar conversa</button>
-        </div>
-    </div>
+            
+            <div class="info-section">
+                <h3>Sobre o Assistente</h3>
+                <p>Explore tendências, monte looks personalizados e tire dúvidas de estilo em tempo real com nossa inteligência artificial de moda.</p>
+            </div>
 
-    <div class="chat-container">
-        <header class="chat-header">
-            <h1>StyleBot</h1>
-            <p class="subtitle">Seu assistente virtual de moda e estilo</p>
-            <div id="connection-status" class="status-offline">⚫ Desconectado</div>
-        </header>
-        <div id="chat-box" class="chat-box">
-            <div class="welcome-message">
-                <p>👋 Olá! Eu sou o <strong>StyleBot</strong>!</p>
-                <p>💅 Clique em "Iniciar conversa" e vamos montar looks incríveis juntos!</p>
-                <p>👗 Posso te ajudar com: combinações de roupas, tendências, cores, acessórios e muito mais!</p>
+            <div id="controles" class="controls-panel">
+                <button id="iniciarBtn" class="btn-iniciar">💬 Iniciar conversa</button>
+                <button id="limparBtn" class="btn-limpar">🧹 Limpar tela</button>
+                <button id="encerrarBtn" class="btn-encerrar">🚪 Encerrar conversa</button>
             </div>
-        </div>
-        <footer class="chat-input-area">
-            <input type="text" id="message-input" placeholder="Digite sua pergunta sobre moda aqui...">
-            <button id="send-button">📤 Enviar</button>
-        </footer>
+        </aside>
+
+        <!-- Painel de Chat (Interação) -->
+        <main class="chat-panel">
+            <header class="chat-header">
+                <div class="header-top">
+                    <h1>StyleBot</h1>
+                    <div id="connection-status" class="status-offline">⚫ Desconectado</div>
+                </div>
+                <p class="subtitle">Seu assistente virtual de moda e estilo</p>
+            </header>
+            
+            <div id="chat-box" class="chat-box">
+                <div class="welcome-message">
+                    <div class="welcome-avatar">✨</div>
+                    <h3>Olá! Eu sou o StyleBot!</h3>
+                    <p>Estou pronto para ajudar você a criar combinações marcantes e explorar as tendências de moda.</p>
+                    <div class="suggestions-grid">
+                        <span class="suggestion-tag">👗 Combinar looks</span>
+                        <span class="suggestion-tag">👠 Tendências</span>
+                        <span class="suggestion-tag">🎨 Cores ideais</span>
+                        <span class="suggestion-tag">💍 Acessórios</span>
+                    </div>
+                    <p class="start-instruction">Clique em <strong>"Iniciar conversa"</strong> no painel ao lado para ativarmos o assistente!</p>
+                </div>
+            </div>
+            
+            <footer class="chat-input-area">
+                <input type="text" id="message-input" placeholder="Pergunte sobre looks, cores, tendências..." disabled>
+                <button id="send-button" disabled>📤 Enviar</button>
+            </footer>
+        </main>
     </div>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
