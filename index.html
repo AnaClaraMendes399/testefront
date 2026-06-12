@@ -3,31 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot com Flask-SocketIO</title>
+    <title>StyleBot - Seu Assistente de Moda</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="chat-container">
-      <figure>
-          <img src="https://img.freepik.com/vetores-premium/chatbot-rede-neural-ai-servidores-e-tecnologia-de-robos-cute-chatbot-ai-personagem_651808-563.jpg?semt=ais_hybrid&w=740">
-      </figure>
+        <figure class="logo-container">
+            <div class="stylebot-logo">
+                <span class="sb">SB</span>
+                <span class="sparkle">✦</span>
+            </div>
+        </figure>
         <div id="controles">
-            <button id="iniciarBtn">Iniciar conversa</button>
-            <button id="limparBtn">Limpar tela</button>
-            <button id="encerrarBtn">Encerrar conversa</button>
-      </div>
+            <button id="iniciarBtn" class="btn-iniciar">💬 Iniciar conversa</button>
+            <button id="limparBtn" class="btn-limpar">🧹 Limpar tela</button>
+            <button id="encerrarBtn" class="btn-encerrar">🚪 Encerrar conversa</button>
+        </div>
     </div>
 
     <div class="chat-container">
         <header class="chat-header">
-            <h1>Chatbot Amigável</h1>
-            <div id="connection-status" class="status-offline">Conectando...</div>
+            <h1>StyleBot</h1>
+            <p class="subtitle">Seu assistente virtual de moda e estilo</p>
+            <div id="connection-status" class="status-offline">⚫ Desconectado</div>
         </header>
         <div id="chat-box" class="chat-box">
+            <div class="welcome-message">
+                <p>👋 Olá! Eu sou o <strong>StyleBot</strong>!</p>
+                <p>💅 Clique em "Iniciar conversa" e vamos montar looks incríveis juntos!</p>
+                <p>👗 Posso te ajudar com: combinações de roupas, tendências, cores, acessórios e muito mais!</p>
             </div>
+        </div>
         <footer class="chat-input-area">
-            <input type="text" id="message-input" placeholder="Digite sua mensagem aqui...">
-            <button id="send-button">Enviar</button>
+            <input type="text" id="message-input" placeholder="Digite sua pergunta sobre moda aqui...">
+            <button id="send-button">📤 Enviar</button>
         </footer>
     </div>
 
@@ -36,4 +45,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-  
