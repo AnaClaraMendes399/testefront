@@ -2,6 +2,8 @@ const URL_BACKEND = 'https://testeback-rtyx.onrender.com'
 
 document.addEventListener('DOMContentLoaded', () => {
     let socket = null;
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 10;
 
     const chatBox = document.getElementById('chat-box');
     const messageInput = document.getElementById('message-input');
@@ -29,10 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (type === 'error') {
             messageElement.classList.add('error-text');
-            sender = 'Erro';
+            sender = '⚠️ Erro';
         } else if (type === 'status') {
             messageElement.classList.add('status-text');
-            sender = 'Status';
+            sender = 'ℹ️ Status';
         }
 
         const senderSpan = document.createElement('strong');
@@ -57,55 +59,81 @@ document.addEventListener('DOMContentLoaded', () => {
         sendButton.disabled = !enabled;
     }
 
+    function updateConnectionStatus(status, message) {
+        connectionStatus.textContent = message;
+        connectionStatus.className = `status-${status}`;
+    }
+
     setChatEnabled(false);
-    connectionStatus.textContent = 'Desconectado';
-    connectionStatus.className = 'status-offline';
+    updateConnectionStatus('offline', 'Desconectado');
     addMessageToChat('Status', 'Clique em "Iniciar conversa" para começar.', 'status');
 
     function iniciarConversa() {
-        if (socket && socket.connected) return;
+        if (socket && socket.connected) {
+            addMessageToChat('Status', 'Já conectado ao servidor.', 'status');
+            return;
+        }
 
-        // 🔥 CORREÇÃO PRINCIPAL: Configurar os transportes
+        addMessageToChat('Status', 'Conectando ao servidor (pode levar até 60 segundos no plano free)...', 'status');
+        updateConnectionStatus('connecting', 'Conectando...');
+
+        // Configuração OTIMIZADA para o Render
         socket = io(URL_BACKEND, {
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'],  // Polling primeiro, depois WebSocket
             reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            timeout: 10000
+            reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+            reconnectionDelay: 2000,
+            reconnectionDelayMax: 10000,
+            timeout: 60000,  // 60 segundos de timeout (importante para o plano free)
+            autoConnect: true,
+            forceNew: true
         });
 
         socket.on('connect', () => {
-            console.log('Conectado ao servidor Socket.IO! SID:', socket.id);
-            connectionStatus.textContent = 'Conectado';
-            connectionStatus.className = 'status-online';
-            addMessageToChat('Status', 'Conectado ao servidor de chat.', 'status');
+            console.log('✅ Conectado ao servidor! SID:', socket.id);
+            reconnectAttempts = 0;
+            updateConnectionStatus('online', 'Conectado');
+            addMessageToChat('Status', '✅ Conectado ao servidor de chat!', 'status');
             setChatEnabled(true);
         });
 
         socket.on('connect_error', (error) => {
-            console.error('Erro de conexão:', error);
-            connectionStatus.textContent = 'Erro de conexão';
-            connectionStatus.className = 'status-offline';
-            addMessageToChat('Erro', `Falha na conexão: ${error.message}`, 'error');
+            console.error('❌ Erro de conexão:', error);
+            reconnectAttempts++;
+            
+            let errorMsg = error.message;
+            if (error.message === 'timeout') {
+                errorMsg = 'Timeout - O servidor pode estar acordando (plano free). Aguarde e tente novamente.';
+            }
+            
+            updateConnectionStatus('offline', 'Erro de conexão');
+            addMessageToChat('Erro', `Falha na conexão: ${errorMsg}`, 'error');
+            
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                addMessageToChat('Status', 'Máximo de tentativas atingido. Clique em "Iniciar conversa" para tentar novamente.', 'status');
+            }
         });
 
-        socket.on('disconnect', () => {
-            console.log('Desconectado do servidor Socket.IO.');
-            connectionStatus.textContent = 'Desconectado';
-            connectionStatus.className = 'status-offline';
-            addMessageToChat('Status', 'Você foi desconectado.', 'status');
+        socket.on('disconnect', (reason) => {
+            console.log('Desconectado:', reason);
+            updateConnectionStatus('offline', 'Desconectado');
+            addMessageToChat('Status', `Desconectado: ${reason}`, 'status');
             setChatEnabled(false);
         });
 
         socket.on('status_conexao', (data) => {
-            console.log('Status conexão:', data);
+            console.log('Status do servidor:', data);
             if (data.session_id) {
                 userSessionId = data.session_id;
+                addMessageToChat('Status', `Sessão ID: ${data.session_id.substring(0, 8)}...`, 'status');
+            }
+            if (data.data) {
+                addMessageToChat('Status', data.data, 'status');
             }
         });
 
         socket.on('nova_mensagem', (data) => {
-            console.log('Nova mensagem:', data);
+            console.log('Mensagem recebida:', data);
             addMessageToChat(data.remetente, data.texto);
         });
 
@@ -116,10 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function encerrarConversa() {
-        if (socket && socket.connected) {
+        if (socket) {
             socket.disconnect();
+            socket = null;
             setChatEnabled(false);
-            addMessageToChat('Status', 'Conversa encerrada pelo usuário.', 'status');
+            updateConnectionStatus('offline', 'Desconectado');
+            addMessageToChat('Status', 'Conversa encerrada.', 'status');
         }
     }
 
@@ -138,10 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
             messageInput.value = '';
             messageInput.focus();
         } else {
-            addMessageToChat('Erro', 'Não conectado ao servidor.', 'error');
+            addMessageToChat('Erro', 'Não conectado ao servidor. Clique em "Iniciar conversa".', 'error');
         }
     }
 
+    // Event listeners
     iniciarBtn.addEventListener('click', iniciarConversa);
     encerrarBtn.addEventListener('click', encerrarConversa);
     limparBtn.addEventListener('click', limparTela);
